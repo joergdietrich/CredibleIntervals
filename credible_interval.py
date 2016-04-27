@@ -63,8 +63,9 @@ def cut_from_top(posterior, level):
                            args=(posterior, level))
 
                            
-def confidence_limits(posterior, levels=[0.95, 0.68]):
-    tot = integrate.quad(posterior.evaluate, -np.inf, np.inf)[0]
+def credible_intervals(posterior, levels=[0.95, 0.68]):
+    tot = integrate.quad(posterior.evaluate, posterior.xmin,
+                         posterior.xmax)[0]
     if not np.isclose(tot, 1):
         raise ValueError("Posterior not normalized to 1", tot)
     limits = []
@@ -78,7 +79,7 @@ def confidence_limits(posterior, levels=[0.95, 0.68]):
     return sorted(limits)
 
     
-def confidence_limits_chain(chain, levels=[0.95, 0.68]):
+def credible_intervals_chain(chain, levels=[0.95, 0.68]):
     levels.sort(reverse=True)
     print("Dim\tMean\tMode\tStdDev", end='')
     for sign in [-1, 1]:
@@ -89,7 +90,7 @@ def confidence_limits_chain(chain, levels=[0.95, 0.68]):
     for i, samples in enumerate(chain.T):
         try:
             posterior = Posterior(samples)
-            limits = confidence_limits(posterior, levels)
+            limits = credible_intervals(posterior, levels)
             print("{0:2d}\t{1: 6.3f}\t{2: 6.3f}\t{3: 6.3f}".format(i,
                                                                 posterior.mean,
                                                                 posterior.mode,
@@ -102,6 +103,6 @@ def confidence_limits_chain(chain, levels=[0.95, 0.68]):
                   end='')
         print("")
         
-#if __name__ == "__main__":
-    #chain = np.loadtxt(sys.argv[1])
-    #limits = confidence_limits_chain(chain)
+if __name__ == "__main__":
+    chain = np.loadtxt(sys.argv[1])
+    limits = credible_intervals_chain(chain)
