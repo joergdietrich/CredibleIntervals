@@ -2,12 +2,9 @@
 
 from __future__ import print_function, division
 
-import getopt
-import string
 import sys
 
 import numpy as np
-from matplotlib.patches import Polygon
 
 from scipy import integrate, optimize, stats
 
@@ -28,7 +25,7 @@ class Posterior:
 
     def evaluate(self, x):
         return self.kde.evaluate(x)
-    
+
 
 def integral_posterior_limited_support_eq_value(fvalue,
                                                 posterior,
@@ -45,6 +42,8 @@ def integral_posterior_limited_support(fvalue, posterior):
     if fvalue == posterior.ymax:
         return 0
     posterior_eq_val = lambda x, fvalue: posterior.evaluate(x) - fvalue
+    print(posterior_eq_val(posterior.xmin, fvalue))
+    print(posterior_eq_val(posterior.mode, fvalue))
     low_lim = optimize.brentq(posterior_eq_val,
                               posterior.xmin,
                               posterior.mode,
@@ -57,14 +56,15 @@ def integral_posterior_limited_support(fvalue, posterior):
     posterior.high_lim = high_lim
     val = integrate.quad(posterior.evaluate, low_lim, high_lim)
     return val[0]
-                         
-        
-def cut_from_top(posterior, level):
-    return optimize.brentq(integral_posterior_limited_support_eq_value,
-                           0, posterior.ymax,
-                           args=(posterior, level))
 
-                           
+
+def cut_from_top(posterior, level):
+    val = optimize.brentq(integral_posterior_limited_support_eq_value,
+                          0, posterior.ymax,
+                          args=(posterior, level))
+    return val
+
+
 def credible_intervals(posterior, levels=[0.95, 0.68]):
     tot = integrate.quad(posterior.evaluate, posterior.xmin,
                          posterior.xmax)[0]
@@ -73,14 +73,14 @@ def credible_intervals(posterior, levels=[0.95, 0.68]):
     limits = []
     for level in levels:
         if level > tot:
-            raise ValueError("desired value exceeds area under posterior", \
+            raise ValueError("desired value exceeds area under posterior",
                 level)
-        z = cut_from_top(posterior, level)
+        _ = cut_from_top(posterior, level)
         limits.append(posterior.low_lim)
         limits.append(posterior.high_lim)
     return sorted(limits)
 
-    
+
 def credible_intervals_chain(chain, levels=[0.95, 0.68]):
     levels.sort(reverse=True)
     print("Dim\tMean\tMode\tStdDev", end='')
@@ -104,7 +104,7 @@ def credible_intervals_chain(chain, levels=[0.95, 0.68]):
             print("{0:2d}\t\tskipped (multi-modal, flat, or delta?)".format(i),
                   end='')
         print("")
-        
+
 if __name__ == "__main__":
     chain = np.loadtxt(sys.argv[1])
     limits = credible_intervals_chain(chain)
