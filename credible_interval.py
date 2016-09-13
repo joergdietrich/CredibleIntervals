@@ -42,8 +42,8 @@ def integral_posterior_limited_support(fvalue, posterior):
     if fvalue == posterior.ymax:
         return 0
     posterior_eq_val = lambda x, fvalue: posterior.evaluate(x) - fvalue
-    print(posterior_eq_val(posterior.xmin, fvalue))
-    print(posterior_eq_val(posterior.mode, fvalue))
+    #print(posterior_eq_val(posterior.xmin, fvalue))
+    #print(posterior_eq_val(posterior.mode, fvalue))
     low_lim = optimize.brentq(posterior_eq_val,
                               posterior.xmin,
                               posterior.mode,
