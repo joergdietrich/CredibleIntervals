@@ -1,2 +1,6 @@
 *.pyc
 *~
+
+#Project
+workspace.xml
+tasks.xml
