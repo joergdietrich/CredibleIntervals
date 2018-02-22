@@ -2,6 +2,7 @@
 
 from __future__ import print_function, division
 
+from collections import OrderedDict
 import sys
 
 import numpy as np
@@ -98,7 +99,7 @@ def credible_intervals_chain(chain, levels=(0.95, 0.68), silent=False):
     if silent is False:
         print("\n===============================================================")
     for i, samples in enumerate(chain.T):
-        limit_list.append(dict())
+        limit_list.append(OrderedDict())
         try:
             posterior = Posterior(samples)
             limits = credible_intervals(posterior, levels)
